@@ -1,0 +1,31 @@
+{% extends 'posts/base.html' %}
+{% block page_title %}
+Confirm Delete {{post.title}} | {{site_name}}
+{% endblock page_title %}
+{% block page_links_top %}{% endblock page_links_top %}
+{% block page_styles %}
+<style>
+
+</style>
+{% endblock page_styles %}
+{% block page_scripts_top %}{% endblock page_scripts_top %}
+{% block nav_links %}
+
+{% endblock nav_links %}
+{% block page_content %}
+<div class="container mt-2 mb-5 p-3">
+    <form method="POST" class="w-75 mt-2 shadow m-auto p-3">
+        <h4>Confirm Delete {{post.title}}?</h4>
+        {% csrf_token %}
+        <div class="d-flex align-items-center mt-2">
+            <input type="submit" value="Confirm Delete" class="btn btn-danger btn btn-sm">
+            <a class="mx-2" href="{% url 'posts:view-post' post.slug %}">Cancel</a>
+        </div>
+    </form>
+</div>
+ 
+{% endblock page_content %}
+{% block page_links_bottom %}{% endblock page_links_bottom %}
+{% block page_scripts_bottom %}
+
+{% endblock page_scripts_bottom %}

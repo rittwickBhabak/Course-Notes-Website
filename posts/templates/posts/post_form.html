@@ -1,0 +1,145 @@
+{% extends 'posts/base.html' %}
+{% block page_title %}
+{% if form.instance.pk %}
+Update {{form.instance.title}} | {{site_name}}
+{% else %}
+Add New Post | {{site_name}}
+{% endif %}
+{% endblock page_title %}
+{% block page_links_top %}{% endblock page_links_top %}
+{% block page_styles %}
+<style>
+    input, textarea, label{
+        display: block;
+        outline: none;
+    }
+    input[type="text"],textarea{
+        width: 100%;
+        padding: 5px;
+    }
+    textarea{
+        border: 2px solid gray;
+    }
+    input[type="text"]{
+        border: none;
+        border-bottom: 2px solid gray;
+    }
+    label[for="id_slug"], input#id_slug{
+        display: none;
+    }
+</style>
+{% endblock page_styles %}
+{% block page_scripts_top %}{% endblock page_scripts_top %}
+{% block nav_links %}
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#image-upload-modal">
+  Upload Image
+</button>
+{% endblock nav_links %}
+{% block page_content %}
+<div class="container">
+    <form method="POST" class="shadow-sm w-lg-75 w-100 m-auto mt-2 p-3">
+        {% csrf_token %}
+        {% if form.instance.pk %}
+        <div class="header fs-4 d-flex justify-content-between">
+            <span>{{post.title}}</span>
+            <span><a href="{% url 'posts:remove-post' post.slug %}" class="text-decoration-none"><i class="fa fa-trash"></i></a></span>
+        </div>
+        {% else %}
+        <div class="fs-4">Add New Post</div>
+        {% endif %}
+        {{form.as_p}}
+        <input type="submit" value="Save" class="btn btn-primary d-block m-auto mt-3">
+    </form>
+</div>
+<div class="modal fade" id="image-upload-modal" tabindex="-1" aria-labelledby="image-upload-modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="modal-content" id="image-upload" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="image-upload-modalLabel">Upload Image</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="file" name="image-input" id="image-input">
+          <img src="" id="preview" class="d-none mt-3 w-100" alt="image-preview">
+          <div class="input-group my-3">
+            <input type="text" class="form-control" id="display-url" readonly>
+            <button class="btn btn-outline-secondary" type="button" onclick="copy(document.querySelector('#display-url').value)">Copy</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <input type="submit" value="Upload" class="btn btn-primary"></input>
+        </div>
+      </form>
+    </div>
+  </div>
+ 
+{% endblock page_content %}
+{% block page_links_bottom %}{% endblock page_links_bottom %}
+{% block page_scripts_bottom %}
+<script>
+    tinymce.init({
+      selector: 'textarea',
+      height: 800,
+      plugins: 'print preview powerpaste casechange importcss tinydrive searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link media mediaembed template codesample table charmap hr pagebreak nonbreaking anchor insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker textpattern noneditable help formatpainter permanentpen pageembed charmap tinycomments mentions quickbars linkchecker emoticons advtable export',
+      mobile: {
+        plugins: 'print preview powerpaste casechange importcss tinydrive searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link media mediaembed template codesample table charmap hr pagebreak nonbreaking anchor insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker textpattern noneditable help formatpainter pageembed charmap mentions quickbars linkchecker emoticons advtable'
+      },
+      menu: {
+        tc: {
+          title: 'Comments',
+          items: 'addcomment showcomments deleteallconversations'
+        }
+      },
+      menubar: 'file edit view insert format tools table tc help',
+      toolbar: 'undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | forecolor backcolor casechange permanentpen formatpainter removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media pageembed template link anchor codesample | a11ycheck ltr rtl | showcomments addcomment',
+      image_caption: true,
+      quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
+      noneditable_noneditable_class: 'mceNonEditable',
+      toolbar_mode: 'sliding',
+      spellchecker_ignore_list: ['Ephox', 'Moxiecode'],
+      tinycomments_mode: 'embedded',
+      content_style: '.mymention{ color: gray; }',
+      contextmenu: 'link image table configurepermanentpen',
+      a11y_advanced_options: true,
+    });
+
+</script>
+<script>
+    const form = document.getElementById("image-upload");
+    const fileInput = document.getElementById("image-input");
+    const preview = document.querySelector('#preview')
+    const displayURL = document.querySelector('#display-url')
+
+    window.addEventListener('paste', e => {
+      if(e.clipboardData.files.length>0){
+        fileInput.files = e.clipboardData.files;
+        if(e.clipboardData.files[0].type.startsWith('image/')){
+          setPreview(e.clipboardData.files[0])
+        }
+      }
+    });
+    form.addEventListener('submit', event=>{
+      event.preventDefault()
+      let new_form = new FormData()
+      new_form.set('key', 'a372897f7a13717125e3d9692bd05e9c')
+      new_form.append('image', fileInput.files[0])
+      axios.post('https://api.imgbb.com/1/upload', new_form)
+      .then(res=>{
+        displayURL.value = res['data']['data']['display_url']
+      })
+      .catch(errors=>{
+        console.log('ERROR: ')
+        console.log(String(errors))
+      })
+    })
+    function setPreview(file){
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      fileReader.onload = () => {
+        preview.src = fileReader.result
+        preview.classList.remove('d-none')
+      }
+    }
+  </script>
+{% endblock page_scripts_bottom %}

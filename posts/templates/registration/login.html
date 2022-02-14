@@ -1,0 +1,46 @@
+{% extends 'posts/base.html' %}
+{% block page_title %}
+Login | {{site_name}}
+{% endblock page_title %}
+{% block page_links_top %}{% endblock page_links_top %}
+{% block page_styles %}
+<style>
+input, label{
+    display: block;
+}
+input[type="text"], input[type="password"]{
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid gray;
+    outline: none;
+    padding: 10px;
+    font-size: larger;
+}
+label{
+    margin-top:10px;
+}
+input[type="submit"]{
+    margin-top: 10px;
+}
+</style>
+{% endblock page_styles %}
+{% block page_scripts_top %}{% endblock page_scripts_top %}
+{% block nav_links %}
+
+{% endblock nav_links %}
+{% block page_content %}
+<div class="container mt-2 mb-5 p-3">
+    <form method="POST" action="{% url 'login' %}" class="w-50 mt-2 shadow m-auto p-3">
+        <h4>Please Login</h4>
+        {% csrf_token %}
+        {{form.as_p}}
+        <input type="submit" value="Loing" class="btn btn-primary d-block m-auto">
+        <input type="hidden" name="next" value="{{next}}">
+    </form>
+</div>
+ 
+{% endblock page_content %}
+{% block page_links_bottom %}{% endblock page_links_bottom %}
+{% block page_scripts_bottom %}
+
+{% endblock page_scripts_bottom %}
